@@ -1,13 +1,19 @@
 #!/usr/bin/perl -w 
 use strict; 
-!@ARGV and die "
-	perl $0 f1 f2 [a|n] \n	
+my $usage ="
+	perl $0 f1 f2 suffix [a|n] \n	
+	
+	f1: file name WITHOUT suffix input forward reads ,
+	f2: file name WITHOUT suffix input reverse reads,
+	suffix: suffix of f/r reads files,
 	a :( add ) means all ids of records in both files DO NOT contain '/1' or '/2', processed by bwa,
 	n :( not add ) means all ids of records in both files contain '/1' or '/2', ;
+	
 "; 
+!@ARGV and die $usage;
 
 #程序用途：提取fastq_clean处理的双端测序文件中的配对读段
-#输入参数是成对双端测序文件名（无后缀），后缀名必须是".clean"
+#输入参数是成对双端测序文件名（无后缀），后缀名必须是".$suffix"
 #正向测序文件$f1必须在前 
 
 #################
@@ -15,8 +21,9 @@ use strict;
 #################
 my $f1 = shift; 
 my $f2 = shift; 
+my $suffix = shift;
 my $flag=shift;
-( -f $f1.".clean" and -f $f2.".clean" and $flag =~/[an]/) or die "perl $0 $f1.clean $f2.clean\n"; 
+( -f $f1.".$suffix" and -f $f2.".$suffix" and $flag =~/[an]/) or die $usage; 
 
 #################
 ##  主程序开始 ##
@@ -25,8 +32,8 @@ my $flag=shift;
 # 定义下面两个变量作为文件句柄，后面传递参数用
 my ($in1, $in2); 
 #建立输入文件句柄
-open $in1,"$f1.clean" or die; 
-open $in2,"$f2.clean" or die; 
+open $in1,"$f1.$suffix" or die; 
+open $in2,"$f2.$suffix" or die; 
 #建立输出文件句柄,强制规定输入文件必须是下列格式
 $f1=~/^(\S+)_1/;
 open O1,'>',"$f1.fq" or die; 

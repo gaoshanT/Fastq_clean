@@ -8,10 +8,11 @@ use Cwd;
 my $usage = <<_EOUSAGE_;
 
 #################################################################################
-# $0 --file_list <String> --suffix [String] --CPU [Int]
+# $0 --file_list <String> --suffix [String] --paired_flag [String] --CPU [Int]
 #  --file_list	a list of file names without suffix
-#  --suffix suffix of the files     
-#  --CPU	Default: 8
+#  --suffix 	suffix of the files	[clean]
+#  --paired_flag if add /1 and /2, then use a, otherwise use n	[a]	     
+#  --CPU		Default: 8
 ###################################################################################
 
 _EOUSAGE_
@@ -21,7 +22,8 @@ _EOUSAGE_
 ##   全局变量  ##
 #################
 my $file_list = "";
-my $suffix="";
+my $suffix="clean";
+my $paired_flag="a";
 my $CPU = 8;
 my $ENCOUNTERED_FAILURE = 0; #全局变量，子程序中继承
 #################
@@ -30,6 +32,7 @@ my $ENCOUNTERED_FAILURE = 0; #全局变量，子程序中继承
 &GetOptions (
 			"file_list=s" => \$file_list,#需要执行的命令所在的文件
 			"suffix=s" => \$suffix, #文件后缀名
+			"paired_flag=s" => \$paired_flag,    #分配的CPU数量
 			"CPU=i" => \$CPU,    #分配的CPU数量
              );
 
@@ -62,8 +65,11 @@ main: {
 	while (<$fh>) {
 		chomp; #这个还是去除一下换行符号，如果只有一列，$cols[0]中还会有换行符
 		my @cols = split(/\t/, $_);
+		my $forwad_seq = $cols[0];
+		my $reverse_seq = $cols[0];
+		$reverse_seq=~s/_1$/_2/;
 		my $cmd;
-		$cmd="$BIN_DIR/match_paired.pl $cols[0] $cols[1] a"; #这个是实际调用的程序
+		$cmd="$BIN_DIR/match_paired.pl $forwad_seq  $reverse_seq $suffix $paired_flag"; #这个是实际调用的程序
 		push (@unix_cmds, $cmd);#用一个数组存储所有命令
 	}
 	close $fh;
